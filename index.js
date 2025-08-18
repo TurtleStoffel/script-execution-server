@@ -15,9 +15,11 @@ app.post('/start-script', (req, res) => {
     return res.status(400).json({ error: 'Argument must be a string.' });
   }
 
-  // Example: run a script called script.sh or script.js with the argument
-  // For demonstration, we'll use a simple echo command
-  const child = spawn('echo', [argument]);
+  // Run code-insiders chat <argument> in ../llm-writing-assistant-worktree
+  const child = spawn('code-insiders', ['chat', argument], {
+    cwd: '../llm-writing-assistant-worktree',
+    shell: true // Use shell for Windows compatibility
+  });
 
   let output = '';
   child.stdout.on('data', (data) => {
@@ -26,6 +28,10 @@ app.post('/start-script', (req, res) => {
 
   child.stderr.on('data', (data) => {
     output += data.toString();
+  });
+
+  child.on('error', (err) => {
+    return res.status(500).json({ error: 'Failed to start process', details: err.message });
   });
 
   child.on('close', (code) => {
