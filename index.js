@@ -15,27 +15,36 @@ app.post('/start-script', (req, res) => {
     return res.status(400).json({ error: 'Argument must be a string.' });
   }
 
-  // Run code-insiders chat <argument> in ../llm-writing-assistant-worktree
-  const child = spawn('code-insiders', ['chat', argument], {
-    cwd: '../llm-writing-assistant-worktree',
-    shell: true // Use shell for Windows compatibility
+  console.log(`Starting claude with argument: "${argument}"`);
+  console.log(`Working directory: ../llm-writing-assistant-worktree`);
+
+  // Open new command prompt window with bash running claude command
+  const child = spawn('cmd', [
+    '/c', 'start', 'cmd', '/k', 
+    `bash -c "cd ../llm-writing-assistant-worktree && claude '${argument}'; read -p 'Press Enter to close...'"`
+  ], {
+    detached: true,
+    stdio: 'ignore'
   });
 
-  let output = '';
-  child.stdout.on('data', (data) => {
-    output += data.toString();
-  });
+  console.log(`Terminal opened with PID: ${child.pid}`);
 
-  child.stderr.on('data', (data) => {
-    output += data.toString();
-  });
+  child.unref(); // Allow parent process to exit independently
 
   child.on('error', (err) => {
-    return res.status(500).json({ error: 'Failed to start process', details: err.message });
+    console.error('Process error:', err);
+    return res.status(500).json({ error: 'Failed to start terminal', details: err.message });
   });
 
-  child.on('close', (code) => {
-    res.json({ output: output.trim(), exitCode: code });
+  child.on('spawn', () => {
+    console.log('Terminal spawned successfully');
+  });
+
+  // Respond immediately since process is detached
+  res.json({ 
+    message: 'Claude session started in new Windows Terminal',
+    pid: child.pid,
+    command: `claude "${argument}"`
   });
 });
 
