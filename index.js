@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors'); // Import cors middleware
 const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,18 +11,28 @@ app.use(cors()); // Allow all origins
 app.use(express.json());
 
 app.post('/start-script', (req, res) => {
-  const { argument } = req.body;
+  const { argument, workingDirectory } = req.body;
   if (typeof argument !== 'string') {
     return res.status(400).json({ error: 'Argument must be a string.' });
   }
+  if (typeof workingDirectory !== 'string') {
+    return res.status(400).json({ error: 'Working directory must be a string.' });
+  }
+
+  const targetWorkingDir = path.resolve(`../${workingDirectory}`);
+  
+  // Check if the working directory exists
+  if (!fs.existsSync(targetWorkingDir)) {
+    return res.status(400).json({ error: `Working directory does not exist: ${targetWorkingDir}` });
+  }
 
   console.log(`Opening new CLI window with claude argument: "${argument}"`);
-  console.log(`Working directory: ../llm-writing-assistant-worktree`);
+  console.log(`Working directory: ${targetWorkingDir}`);
 
   // Open new CLI window with bash command
   const bashCommand = `claude "${argument}"`;
   const child = spawn('cmd', ['/c', 'start', '', 'C:\\Program Files\\Git\\bin\\bash.exe', '-c', bashCommand], {
-    cwd: '../llm-writing-assistant-worktree',
+    cwd: targetWorkingDir,
     stdio: ['pipe', 'pipe', 'pipe']
   });
 
