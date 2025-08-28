@@ -8,7 +8,6 @@ const PORT = process.env.PORT || 3000;
 app.use(cors()); // Allow all origins
 app.use(express.json());
 
-// POST /start-script
 app.post('/start-script', (req, res) => {
   const { argument } = req.body;
   if (typeof argument !== 'string') {
@@ -18,33 +17,37 @@ app.post('/start-script', (req, res) => {
   console.log(`Starting claude with argument: "${argument}"`);
   console.log(`Working directory: ../llm-writing-assistant-worktree`);
 
-  // Open new command prompt window with bash running claude command
-  const child = spawn('cmd', [
-    '/c', 'start', 'cmd', '/k', 
-    `bash -c "cd ../llm-writing-assistant-worktree && claude '${argument}'; read -p 'Press Enter to close...'"`
-  ], {
-    detached: true,
-    stdio: 'ignore'
+  // Direct call to claude -p
+  const child = spawn('claude', ['-p', argument], {
+    cwd: '../llm-writing-assistant-worktree',
+    stdio: ['pipe', 'pipe', 'pipe']
   });
 
-  console.log(`Terminal opened with PID: ${child.pid}`);
+  let stdout = '';
+  let stderr = '';
 
-  child.unref(); // Allow parent process to exit independently
+  child.stdout.on('data', (data) => {
+    stdout += data.toString();
+  });
+
+  child.stderr.on('data', (data) => {
+    stderr += data.toString();
+  });
 
   child.on('error', (err) => {
     console.error('Process error:', err);
-    return res.status(500).json({ error: 'Failed to start terminal', details: err.message });
+    return res.status(500).json({ error: 'Failed to start claude', details: err.message });
   });
 
-  child.on('spawn', () => {
-    console.log('Terminal spawned successfully');
-  });
-
-  // Respond immediately since process is detached
-  res.json({ 
-    message: 'Claude session started in new Windows Terminal',
-    pid: child.pid,
-    command: `claude "${argument}"`
+  child.on('close', (code) => {
+    console.log(`Claude process exited with code: ${code}`);
+    res.json({
+      message: 'Claude process completed',
+      exitCode: code,
+      command: `claude -p "${argument}"`,
+      stdout: stdout,
+      stderr: stderr
+    });
   });
 });
 
