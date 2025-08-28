@@ -14,11 +14,12 @@ app.post('/start-script', (req, res) => {
     return res.status(400).json({ error: 'Argument must be a string.' });
   }
 
-  console.log(`Starting claude with argument: "${argument}"`);
+  console.log(`Opening new CLI window with claude argument: "${argument}"`);
   console.log(`Working directory: ../llm-writing-assistant-worktree`);
 
-  // Direct call to claude -p
-  const child = spawn('claude', ['-p', argument], {
+  // Open new CLI window with bash command
+  const bashCommand = `claude "${argument}"`;
+  const child = spawn('cmd', ['/c', 'start', '', 'C:\\Program Files\\Git\\bin\\bash.exe', '-c', bashCommand], {
     cwd: '../llm-writing-assistant-worktree',
     stdio: ['pipe', 'pipe', 'pipe']
   });
@@ -44,7 +45,7 @@ app.post('/start-script', (req, res) => {
     res.json({
       message: 'Claude process completed',
       exitCode: code,
-      command: `claude -p "${argument}"`,
+      command: `claude "${argument}"`,
       stdout: stdout,
       stderr: stderr
     });
