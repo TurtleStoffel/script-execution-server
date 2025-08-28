@@ -4,7 +4,7 @@
   "description": "This is a simple Node.js backend using Express. It exposes an API endpoint to start a script, accepting a single string argument.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node --watch index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
