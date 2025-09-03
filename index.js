@@ -30,8 +30,7 @@ app.post('/start-script', (req, res) => {
   console.log(`Working directory: ${targetWorkingDir}`);
 
   // Open new CLI window with bash command
-  const enhancedArgument = `${argument}. IMPORTANT: If anything in this request is unclear or ambiguous, you must first ask clarifying questions before proceeding with any implementation.`;
-  const bashCommand = `claude "${enhancedArgument}"`;
+  const bashCommand = `claude "${argument}"`;
   const child = spawn('cmd', ['/c', 'start', '', 'C:\\Program Files\\Git\\bin\\bash.exe', '-c', bashCommand], {
     cwd: targetWorkingDir,
     stdio: ['pipe', 'pipe', 'pipe']
