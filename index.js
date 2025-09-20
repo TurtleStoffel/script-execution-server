@@ -57,7 +57,7 @@ app.post('/start-script', (req, res) => {
     res.json({
       message: 'Claude process completed',
       exitCode: code,
-      command: `claude "${enhancedArgument}"`,
+      command: `claude "${argument}"`,
       stdout: stdout,
       stderr: stderr
     });
