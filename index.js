@@ -28,7 +28,7 @@ app.post('/start-script', (req, res) => {
 
   // If worktree is specified, create it and use it as the working directory
   if (worktree && typeof worktree === 'string') {
-    const worktreeDir = path.resolve(`../llm-writing-assistant-worktrees/${worktree}`);
+    const worktreeDir = path.resolve(`../${workingDirectory}-worktrees/${worktree}`);
 
     // Run script to create worktree
     const createWorktreeScript = path.join(__dirname, 'create-worktree.sh');
