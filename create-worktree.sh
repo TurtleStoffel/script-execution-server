@@ -19,7 +19,7 @@ WORKTREE_NAME="$2"
 SOURCE_REPO="../$WORKING_DIR"
 
 # Path where worktrees will be created
-WORKTREES_BASE="../llm-writing-assistant-worktrees"
+WORKTREES_BASE="../$WORKING_DIR-worktrees"
 WORKTREE_PATH="$WORKTREES_BASE/$WORKTREE_NAME"
 
 # Check if source repository exists
