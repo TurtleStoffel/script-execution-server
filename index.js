@@ -11,7 +11,7 @@ app.use(cors()); // Allow all origins
 app.use(express.json());
 
 app.post('/start-script', (req, res) => {
-  const { argument, workingDirectory } = req.body;
+  const { argument, workingDirectory, worktree } = req.body;
   if (typeof argument !== 'string') {
     return res.status(400).json({ error: 'Argument must be a string.' });
   }
@@ -19,11 +19,33 @@ app.post('/start-script', (req, res) => {
     return res.status(400).json({ error: 'Working directory must be a string.' });
   }
 
-  const targetWorkingDir = path.resolve(`../${workingDirectory}`);
-  
+  let targetWorkingDir = path.resolve(`../${workingDirectory}`);
+
   // Check if the working directory exists
   if (!fs.existsSync(targetWorkingDir)) {
     return res.status(400).json({ error: `Working directory does not exist: ${targetWorkingDir}` });
+  }
+
+  // If worktree is specified, create it and use it as the working directory
+  if (worktree && typeof worktree === 'string') {
+    const worktreeDir = path.resolve(`../llm-writing-assistant-worktrees/${worktree}`);
+
+    // Run script to create worktree
+    const createWorktreeScript = path.join(__dirname, 'create-worktree.sh');
+    const { execSync } = require('child_process');
+
+    try {
+      execSync(`bash "${createWorktreeScript}" "${workingDirectory}" "${worktree}"`, {
+        cwd: __dirname,
+        stdio: 'inherit'
+      });
+      targetWorkingDir = worktreeDir;
+    } catch (error) {
+      return res.status(500).json({
+        error: 'Failed to create worktree',
+        details: error.message
+      });
+    }
   }
 
   console.log(`Opening new CLI window with claude argument: "${argument}"`);
