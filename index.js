@@ -86,6 +86,48 @@ app.post('/start-script', (req, res) => {
   });
 });
 
+app.delete('/worktree/:worktree', (req, res) => {
+  const { worktree } = req.params;
+  const { workingDirectory } = req.body;
+  
+  if (!worktree || typeof worktree !== 'string') {
+    return res.status(400).json({ error: 'Worktree name must be provided as a URL parameter.' });
+  }
+  
+  if (!workingDirectory || typeof workingDirectory !== 'string') {
+    return res.status(400).json({ error: 'Working directory must be provided in request body.' });
+  }
+
+  const targetWorkingDir = path.resolve(`../${workingDirectory}`);
+
+  // Check if the working directory exists
+  if (!fs.existsSync(targetWorkingDir)) {
+    return res.status(400).json({ error: `Working directory does not exist: ${targetWorkingDir}` });
+  }
+
+  // Run script to remove worktree
+  const removeWorktreeScript = path.join(__dirname, 'remove-worktree.sh');
+  const { execSync } = require('child_process');
+
+  try {
+    execSync(`bash "${removeWorktreeScript}" "${workingDirectory}" "${worktree}"`, {
+      cwd: __dirname,
+      stdio: 'inherit'
+    });
+    
+    res.json({
+      message: 'Worktree removed successfully',
+      worktree: worktree,
+      workingDirectory: workingDirectory
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Failed to remove worktree',
+      details: error.message
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
