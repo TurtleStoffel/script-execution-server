@@ -48,13 +48,16 @@ app.post('/start-script', (req, res) => {
     }
   }
 
-  console.log(`Opening new CLI window with claude argument: "${argument}"`);
+  console.log(`Opening new terminal window with claude argument: "${argument}"`);
   console.log(`Working directory: ${targetWorkingDir}`);
 
-  // Open new CLI window with bash command
-  const bashCommand = `claude "${argument}"`;
-  const child = spawn('cmd', ['/c', 'start', '', 'C:\\Program Files\\Git\\bin\\bash.exe', '-c', bashCommand], {
-    cwd: targetWorkingDir,
+  // Open new terminal window and run claude in it
+  const script = `tell application "Terminal"
+    do script "cd '${targetWorkingDir.replace(/'/g, "'\\''")}' && claude '${argument.replace(/'/g, "'\\''")}'\"
+    activate
+  end tell`;
+
+  const child = spawn('osascript', ['-e', script], {
     stdio: ['pipe', 'pipe', 'pipe']
   });
 
