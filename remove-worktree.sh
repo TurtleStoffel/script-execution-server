@@ -4,23 +4,19 @@
 # Removes a git worktree for the specified repository
 
 # Arguments:
-# $1 - working directory name (relative to parent directory)
-# $2 - worktree name
+# $1 - full path to source repository
+# $2 - full path to worktree directory
 
 if [ $# -ne 2 ]; then
-    echo "Usage: $0 <working-directory> <worktree-name>"
+    echo "Usage: $0 <source-repo-path> <worktree-path>"
     exit 1
 fi
 
-WORKING_DIR="$1"
-WORKTREE_NAME="$2"
+SOURCE_REPO="$1"
+WORKTREE_PATH="$2"
 
-# Path to the source repository
-SOURCE_REPO="../$WORKING_DIR"
-
-# Path where worktrees are located
-WORKTREES_BASE="../$WORKING_DIR-worktrees"
-WORKTREE_PATH="$WORKTREES_BASE/$WORKTREE_NAME"
+# Get the parent directory of the worktree path
+WORKTREES_BASE="$(dirname "$WORKTREE_PATH")"
 
 # Check if source repository exists
 if [ ! -d "$SOURCE_REPO" ]; then

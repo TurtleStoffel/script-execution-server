@@ -38,7 +38,7 @@ app.post('/start-script', (req, res) => {
     const { execSync } = require('child_process');
 
     try {
-      execSync(`bash "${createWorktreeScript}" "${workingDirectory}" "${worktree}"`, {
+      execSync(`bash "${createWorktreeScript}" "${targetWorkingDir}" "${worktreeDir}"`, {
         cwd: __dirname,
         stdio: 'inherit'
       });
@@ -111,6 +111,7 @@ app.delete('/worktree/:worktree', (req, res) => {
   }
 
   const targetWorkingDir = path.resolve(ROOT_CODE_DIR, workingDirectory);
+  const worktreeDir = path.resolve(ROOT_CODE_DIR, `${workingDirectory}-worktrees`, worktree);
 
   // Check if the working directory exists
   if (!fs.existsSync(targetWorkingDir)) {
@@ -122,7 +123,7 @@ app.delete('/worktree/:worktree', (req, res) => {
   const { execSync } = require('child_process');
 
   try {
-    execSync(`bash "${removeWorktreeScript}" "${workingDirectory}" "${worktree}"`, {
+    execSync(`bash "${removeWorktreeScript}" "${targetWorkingDir}" "${worktreeDir}"`, {
       cwd: __dirname,
       stdio: 'inherit'
     });
