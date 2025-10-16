@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --watch index.js",
     "staging": "PORT=8001 node --watch index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tokens": "node calculate-tokens.js"
   },
   "keywords": [],
   "author": "",
