@@ -1,73 +1,12 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
 const path = require('path');
+const { calculateTokenUsage } = require('./token-calculator');
 
 /**
- * Calculate token usage from a Claude Code project history file
+ * CLI script to calculate token usage from a Claude Code project history file
  * Usage: node calculate-tokens.js <path-to-history-file.jsonl>
  */
-
-function calculateTokenUsage(filePath) {
-  // Check if file exists
-  if (!fs.existsSync(filePath)) {
-    console.error(`Error: File not found: ${filePath}`);
-    process.exit(1);
-  }
-
-  // Read the JSONL file
-  const content = fs.readFileSync(filePath, 'utf-8');
-  const lines = content.trim().split('\n');
-
-  // Initialize counters
-  let totalInputTokens = 0;
-  let totalOutputTokens = 0;
-  let cacheCreationTokens = 0;
-  let cacheReadTokens = 0;
-  let ephemeral5mTokens = 0;
-  let ephemeral1hTokens = 0;
-  let messageCount = 0;
-
-  // Process each line
-  for (const line of lines) {
-    if (!line.trim()) continue;
-
-    try {
-      const entry = JSON.parse(line);
-
-      // Only process assistant messages with usage data
-      if (entry.type === 'assistant' && entry.message && entry.message.usage) {
-        const usage = entry.message.usage;
-        messageCount++;
-
-        // Add up the tokens
-        totalInputTokens += usage.input_tokens || 0;
-        totalOutputTokens += usage.output_tokens || 0;
-        cacheCreationTokens += usage.cache_creation_input_tokens || 0;
-        cacheReadTokens += usage.cache_read_input_tokens || 0;
-
-        // Handle cache_creation object if it exists
-        if (usage.cache_creation) {
-          ephemeral5mTokens += usage.cache_creation.ephemeral_5m_input_tokens || 0;
-          ephemeral1hTokens += usage.cache_creation.ephemeral_1h_input_tokens || 0;
-        }
-      }
-    } catch (error) {
-      console.error(`Warning: Failed to parse line: ${error.message}`);
-    }
-  }
-
-  return {
-    totalInputTokens,
-    totalOutputTokens,
-    cacheCreationTokens,
-    cacheReadTokens,
-    ephemeral5mTokens,
-    ephemeral1hTokens,
-    messageCount,
-    totalTokens: totalInputTokens + totalOutputTokens,
-  };
-}
 
 function formatNumber(num) {
   return num.toLocaleString();
@@ -87,7 +26,13 @@ function main() {
   const filePath = path.resolve(args[0]);
   console.log(`\nAnalyzing: ${filePath}\n`);
 
-  const stats = calculateTokenUsage(filePath);
+  let stats;
+  try {
+    stats = calculateTokenUsage(filePath);
+  } catch (error) {
+    console.error(`Error: ${error.message}`);
+    process.exit(1);
+  }
 
   console.log('='.repeat(60));
   console.log('TOKEN USAGE SUMMARY');
