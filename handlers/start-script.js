@@ -1,12 +1,13 @@
 const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const config = require('../config');
 
 /**
  * Handler for the /start-script endpoint
  * Starts Claude in a new terminal window with the specified arguments
  */
-async function startScriptHandler(req, res, rootCodeDir) {
+async function startScriptHandler(req, res) {
   const { argument, workingDirectory, worktree } = req.body;
 
   // Validation
@@ -17,7 +18,7 @@ async function startScriptHandler(req, res, rootCodeDir) {
     return res.status(400).json({ error: 'Working directory must be a string.' });
   }
 
-  let targetWorkingDir = path.resolve(rootCodeDir, workingDirectory);
+  let targetWorkingDir = path.resolve(config.ROOT_CODE_DIR, workingDirectory);
 
   // Check if the working directory exists
   if (!fs.existsSync(targetWorkingDir)) {
@@ -26,7 +27,7 @@ async function startScriptHandler(req, res, rootCodeDir) {
 
   // If worktree is specified, create it and use it as the working directory
   if (worktree && typeof worktree === 'string') {
-    const worktreeDir = path.resolve(rootCodeDir, `${workingDirectory}-worktrees`, worktree);
+    const worktreeDir = path.resolve(config.ROOT_CODE_DIR, `${workingDirectory}-worktrees`, worktree);
 
     // Run script to create worktree
     const createWorktreeScript = path.join(__dirname, '..', 'create-worktree.sh');

@@ -1,12 +1,13 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const config = require('../config');
 
 /**
  * Handler for the DELETE /worktree/:worktree endpoint
  * Removes a git worktree
  */
-function deleteWorktreeHandler(req, res, rootCodeDir) {
+function deleteWorktreeHandler(req, res) {
   const { worktree } = req.params;
   const { workingDirectory } = req.body;
 
@@ -19,8 +20,8 @@ function deleteWorktreeHandler(req, res, rootCodeDir) {
     return res.status(400).json({ error: 'Working directory must be provided in request body.' });
   }
 
-  const targetWorkingDir = path.resolve(rootCodeDir, workingDirectory);
-  const worktreeDir = path.resolve(rootCodeDir, `${workingDirectory}-worktrees`, worktree);
+  const targetWorkingDir = path.resolve(config.ROOT_CODE_DIR, workingDirectory);
+  const worktreeDir = path.resolve(config.ROOT_CODE_DIR, `${workingDirectory}-worktrees`, worktree);
 
   // Check if the working directory exists
   if (!fs.existsSync(targetWorkingDir)) {
