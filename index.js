@@ -48,14 +48,14 @@ app.post('/start-script', (req, res) => {
     }
   }
 
-  console.log(`Opening new terminal window with claude argument: "${argument}"`);
-  console.log(`Working directory: ${targetWorkingDir}`);
-
   // Modify argument if worktree is used - add commit and PR instructions
   let finalArgument = argument;
   if (worktree) {
-    finalArgument = `${argument}. When you're done, create a commit and push it to the remote using the gh CLI. If there is no PR yet, create a PR to 'main' too.`;
+    finalArgument = `${argument}. When you are done, create a commit and push it to the remote using the gh CLI. If there is no PR yet, create a PR to the main branch too.`;
   }
+
+  console.log(`Opening new terminal window with claude argument: "${finalArgument}"`);
+  console.log(`Working directory: ${targetWorkingDir}`);
 
   // Open new terminal window and run claude in it
   const script = `tell application "Terminal"
