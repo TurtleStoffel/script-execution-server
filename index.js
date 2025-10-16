@@ -7,6 +7,9 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configuration: Root directory where all code repositories are located
+const ROOT_CODE_DIR = path.join(process.env.HOME, 'coding');
+
 app.use(cors()); // Allow all origins
 app.use(express.json());
 
@@ -19,7 +22,7 @@ app.post('/start-script', (req, res) => {
     return res.status(400).json({ error: 'Working directory must be a string.' });
   }
 
-  let targetWorkingDir = path.resolve(`../${workingDirectory}`);
+  let targetWorkingDir = path.resolve(ROOT_CODE_DIR, workingDirectory);
 
   // Check if the working directory exists
   if (!fs.existsSync(targetWorkingDir)) {
@@ -28,7 +31,7 @@ app.post('/start-script', (req, res) => {
 
   // If worktree is specified, create it and use it as the working directory
   if (worktree && typeof worktree === 'string') {
-    const worktreeDir = path.resolve(`../${workingDirectory}-worktrees/${worktree}`);
+    const worktreeDir = path.resolve(ROOT_CODE_DIR, `${workingDirectory}-worktrees`, worktree);
 
     // Run script to create worktree
     const createWorktreeScript = path.join(__dirname, 'create-worktree.sh');
@@ -107,7 +110,7 @@ app.delete('/worktree/:worktree', (req, res) => {
     return res.status(400).json({ error: 'Working directory must be provided in request body.' });
   }
 
-  const targetWorkingDir = path.resolve(`../${workingDirectory}`);
+  const targetWorkingDir = path.resolve(ROOT_CODE_DIR, workingDirectory);
 
   // Check if the working directory exists
   if (!fs.existsSync(targetWorkingDir)) {
